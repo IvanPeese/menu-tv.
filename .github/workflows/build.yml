@@ -10,6 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Marcar versión
+        run: echo "window.BUILD='${{ github.sha }}';" > app/src/main/assets/build.js
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

@@ -86,6 +86,18 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public boolean dispatchKeyEvent(android.view.KeyEvent e) {
+        int k = e.getKeyCode();
+        if (k >= android.view.KeyEvent.KEYCODE_PROG_RED && k <= android.view.KeyEvent.KEYCODE_PROG_BLUE) {
+            if (e.getAction() == android.view.KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) {
+                web.evaluateJavascript("window.onColor && window.onColor(" + (k - android.view.KeyEvent.KEYCODE_PROG_RED) + ")", null);
+            }
+            return true;
+        }
+        return super.dispatchKeyEvent(e);
+    }
+
+    @Override
     public void onBackPressed() {
         // Un launcher no se cierra con Atrás; la interfaz decide (cierra "Todas las apps")
         web.evaluateJavascript("window.onBack && window.onBack()", null);

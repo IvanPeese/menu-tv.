@@ -34,6 +34,8 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
 .night #night{display:block}
 .tile.edit{outline:3px dashed #fff;outline-offset:7px}
 #toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:9px 22px;font-size:15px;font-weight:600;display:none;white-space:nowrap;z-index:4}
+/* punto de color: la app tiene atajo en el botón de ese color del mando */
+.cdot{position:absolute;left:8px;top:8px;width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 2px #fff,0 1px 8px rgba(0,0,0,.7)}
 #ip{position:absolute;left:72px;bottom:12px;font-size:11px;letter-spacing:.4px;color:#fff;opacity:.4}
 #idle{position:absolute;inset:0;display:none;z-index:6}
 .idle #idle{display:block}
@@ -112,6 +114,7 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
 <div id="pick"><div id="pickbox"><h3 id="picktitle"></h3><p id="picksub"></p><div id="pickopts"></div></div></div>
 </div>
 
+<script src="build.js"></script>
 <script>
 (function () {
   /* ===================== CONFIGURACIÓN (edita aquí) ===================== */
@@ -126,6 +129,8 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
     ],
     browser: 'com.internet.tvbrowser',                   // app del botón "Navegador"
     inputsFallback: 'com.tcl.sourcemananger',            // si no se pueden listar las entradas
+    colorKeys: ['com.netflix.ninja', 'com.spotify.tv.android', 'com.google.android.youtube.tv', 'com.movistarplus.androidtv'],  // atajos: botón rojo, verde, amarillo y azul del mando
+    repo: 'IvanPeese/menu-tv.',                          // repositorio de GitHub para avisar de versiones nuevas (usuario/nombre)
     name: 'Iván',                                        // para el saludo
     idleMin: 5,                                          // minutos sin tocar el mando para entrar en modo reposo
     dates: [                                             // fechas que se repiten cada año: d = 'MM-DD'
@@ -141,6 +146,7 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
     [2027, 3, 20, 'Equinoccio de primavera'], [2027, 4, 22, 'Lluvia de Líridas'], [2027, 6, 21, 'Solsticio de verano'],
     [2027, 8, 2, 'Eclipse solar total (sur de España)'], [2027, 8, 12, 'Lluvia de Perseidas'], [2027, 9, 23, 'Equinoccio de otoño'],
     [2027, 10, 18, 'Saturno en oposición'], [2027, 12, 14, 'Lluvia de Gemínidas']];
+  var COLORS = ['#E5383B', '#2EC45B', '#F5C518', '#2F7BFF'];
   var FACTS = ["Un día en Venus dura más que un año venusiano.", "La luz del Sol tarda unos 8 minutos y 20 segundos en llegar a la Tierra.", "En el Sol cabrían más de un millón de Tierras.", "Saturno es menos denso que el agua.", "En Marte los atardeceres son de color azulado.", "La Vía Láctea tiene cientos de miles de millones de estrellas.", "Un año en Mercurio dura solo 88 días terrestres.", "La Luna se aleja de la Tierra unos 3,8 cm cada año.", "Neptuno completó su primera órbita desde su descubrimiento en 2011.", "Una cucharadita de estrella de neutrones pesaría miles de millones de toneladas.", "Olympus Mons, en Marte, es el volcán más alto del sistema solar.", "Los anillos de Saturno son sobre todo hielo de agua.", "La Voyager 1 es el objeto humano más lejano de la Tierra.", "En el espacio no se oye nada: no hay aire que transmita el sonido.", "La Estación Espacial Internacional da una vuelta a la Tierra cada 90 minutos.", "Titán, luna de Saturno, tiene lagos de metano líquido.", "Andrómeda, nuestra galaxia vecina, se acerca a la Vía Láctea.", "La Tierra viaja alrededor del Sol a unos 107.000 km/h.", "Plutón pasó a ser planeta enano en 2006.", "Algunas estrellas de neutrones giran cientos de veces por segundo.", "Ceres es el mayor objeto del cinturón de asteroides.", "Europa, luna de Júpiter, esconde un océano bajo su hielo.", "Parte de la luz de las estrellas que ves esta noche salió hace miles de años.", "El Sol concentra el 99,8 % de la masa del sistema solar.", "Un día en Júpiter dura menos de 10 horas.", "Encélado lanza chorros de vapor de agua desde su polo sur.", "M87* fue el primer agujero negro fotografiado, en 2019.", "Mercurio está más cerca del Sol, pero Venus es más caliente.", "La Gran Mancha Roja de Júpiter es una tormenta mayor que la Tierra.", "Cada segundo, el Sol convierte millones de toneladas de materia en energía.", "Si pudieras conducir hasta la Luna, tardarías unos 5 meses a 100 km/h."];
   var CREDITS = [
     'Saturno eclipsando al Sol · NASA/JPL-Caltech/SSI · Cassini',
@@ -303,7 +309,40 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
   var installed = {}, labels = {}, iconQueue = [];
   var bar = document.getElementById('bar'), appsEl = document.getElementById('apps'), grid = document.getElementById('grid');
   var rows = [[], []], sel = { r: 1, c: 0 }, mode = 'main', gsel = 0, gridEls = [];
-  var favOrder = [], editing = false, focusLast = false;
+  var favOrder = [], editing = false, focusLast = false, ipText = '', updNew = false;
+  function showIp() {
+    var el = document.getElementById('ip');
+    el.textContent = (ipText ? 'IP ' + ipText : '') + (updNew ? (ipText ? '  ·  ' : '') + 'Versión nueva disponible' : '');
+    el.style.opacity = updNew ? '0.95' : ''; el.style.color = updNew ? '#FFD54A' : '';
+  }
+  /* aviso de versión nueva: compara con la última compilación correcta en GitHub */
+  function checkUpdate() {
+    if (!window.BUILD || !CFG.repo || !window.fetch) return;
+    fetch('https://api.github.com/repos/' + CFG.repo + '/actions/runs?branch=main&status=success&per_page=1')
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var sha = j && j.workflow_runs && j.workflow_runs[0] && j.workflow_runs[0].head_sha;
+        if (sha && sha !== window.BUILD) { if (!updNew) { updNew = true; showIp(); toast('Hay una versión nueva disponible en GitHub', 6000); } }
+        else if (sha) { updNew = false; showIp(); }
+      }).catch(function () { });
+  }
+  setTimeout(checkUpdate, 4000); setInterval(checkUpdate, 6 * 3600 * 1000);
+  function colorIdx(e) {
+    var k = e.key, c = e.keyCode, names = ['ColorF0Red', 'ColorF1Green', 'ColorF2Yellow', 'ColorF3Blue'], i = names.indexOf(k);
+    if (i >= 0) return i;
+    if (c >= 403 && c <= 406) return c - 403;
+    if (c >= 183 && c <= 186) return c - 183;
+    if (k === 'F1' || k === 'F2' || k === 'F3' || k === 'F4') return +k.charAt(1) - 1;
+    return -1;
+  }
+  window.onColor = function (n) {
+    if (idle) { wake(); return; }
+    resetIdle(); if (editing || mode === 'pick') return;
+    var p = CFG.colorKeys[n]; if (!p) return;
+    if (!installed[p]) { toast('Esa app no está instalada', 2200); return; }
+    if (mode === 'all') closeAll();
+    launchApp(p);
+  };
   function lsGet(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v === null ? d : v; } catch (e) { return d; } }
   function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
   function launchApp(pkg) { lsSet('last', pkg); focusLast = true; A.launch(pkg); }
@@ -437,6 +476,8 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
     favOrder.forEach(function (p) {
       var t = document.createElement('button'); t.className = 'tile'; t.dataset.pkg = p; t.dataset.label = labels[p] || '';
       var img = document.createElement('img'); img.alt = labels[p] || ''; t.appendChild(img); setIcon(img, t, p);
+      var ci = CFG.colorKeys.indexOf(p);
+      if (ci >= 0) { var dot = document.createElement('span'); dot.className = 'cdot'; dot.style.background = COLORS[ci]; t.appendChild(dot); }
       t.onclick = function () { activate(t); };
       appsEl.appendChild(t);
     });
@@ -463,8 +504,8 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
       rows[1].forEach(function (t, i) { if (t.dataset.pkg === lp) idx = i; });
       if (idx >= 0) { sel = { r: 1, c: idx }; }
     }
-    var ipv = ''; try { ipv = A.getIp ? A.getIp() : ''; } catch (e) { }
-    document.getElementById('ip').textContent = ipv ? 'IP ' + ipv : '';
+    ipText = ''; try { ipText = A.getIp ? A.getIp() : ''; } catch (e) { }
+    showIp();
     markFavs(); startPump(); update();
   }
 
@@ -525,6 +566,8 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
     var k = e.key, kc = e.keyCode, h = true;
     resetIdle();
     if (idle) { wake(); if (isEnter(e)) swallowUp = true; e.preventDefault(); return; }
+    var cx = colorIdx(e);
+    if (cx >= 0) { window.onColor(cx); e.preventDefault(); return; }
     if (isEnter(e)) {
       if (!e.repeat && !holdT) { holdFired = false; holdT = setTimeout(function () { holdT = 0; holdFired = true; longPress(); }, 650); }
       e.preventDefault(); return;
