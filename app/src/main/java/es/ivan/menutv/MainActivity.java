@@ -49,6 +49,10 @@ public class MainActivity extends Activity {
         s.setAllowFileAccess(true);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
         s.setMediaPlaybackRequiresUserGesture(false);
+        s.setUseWideViewPort(true);
+        s.setLoadWithOverviewMode(false);
+        s.setSupportZoom(false);
+        web.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         web.setWebViewClient(new WebViewClient());
         web.addJavascriptInterface(new Bridge(), "Android");
         web.setFocusable(true);

@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Menú TV</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400&family=Figtree:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
-html,body{margin:0;height:100%;background:#0b1220;overflow:hidden;font-family:'Figtree',system-ui,sans-serif}
+html,body{margin:0;width:100%;height:100%;background:#0b1220;overflow:hidden;font-family:'Figtree',system-ui,sans-serif}
 #app{position:absolute;left:50%;top:50%;width:1280px;height:720px;overflow:hidden;transform:translate(-50%,-50%);color:#fff;--c1:rgba(255,255,255,.92);--c2:rgba(255,255,255,.55)}
 .stage{position:absolute;inset:0;overflow:hidden;transition:background 1.4s;background:linear-gradient(180deg,#7D8A9A 0%,#A5B0BD 55%,#CDD3DA 100%)}
 .layer{position:absolute;inset:0;opacity:0;transition:opacity 1.4s}
@@ -28,7 +28,12 @@ html,body{margin:0;height:100%;background:#0b1220;overflow:hidden;font-family:'F
 #app[data-night="1"][data-wx=sun] .l-night,#app[data-night="1"][data-wx=partly] .l-night{opacity:1}
 .dim{position:absolute;inset:0;background:rgba(6,12,30,.5);opacity:0;transition:opacity 1.4s}
 #app[data-night="1"][data-wx=cloud] .dim,#app[data-night="1"][data-wx=rain] .dim,#app[data-night="1"][data-wx=snow] .dim,#app[data-night="1"][data-wx=partly] .dim{opacity:1}
-#app.lite .r2,#app.lite .mist,#app.lite .rays,#app.lite .mote{display:none}
+#app.lite .r2,#app.lite .mist,#app.lite .rays,#app.lite .mote,#app.lite .shim,#app.lite .cld:nth-child(n+3){display:none}
+#app.lite .glow{animation:none}
+#app.lite .stage,#app.lite .layer,#app.lite .dim{transition:none}
+#app.lite .tile.sel{animation:none;box-shadow:0 0 0 3px #fff,0 8px 22px rgba(10,20,40,.5);transition:none}
+#app.lite .sel,#app.lite .tile{transition:none}
+.cld,.rain,.snow,.mist{will-change:transform}
 
 /* ---------- sol ---------- */
 .glow{position:absolute;left:290px;top:-150px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(255,252,235,.95) 0,rgba(255,238,190,.65) 14%,rgba(255,220,150,.28) 36%,transparent 65%);animation:breathe 9s ease-in-out infinite}
@@ -181,7 +186,7 @@ radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
     ],
     browser: 'com.internet.tvbrowser',                   // app del botón "Navegador"
     inputsFallback: 'com.tcl.sourcemananger',            // si no se pueden listar las entradas
-    lite: false                                          // true = menos animaciones (si la tele va justa)
+    lite: true                                           // true = animaciones ligeras (recomendado en teles de 32 bits)
   };
   /* ====================================================================== */
 
@@ -211,10 +216,15 @@ radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
 
   /* ---- Escala 1280x720 a la pantalla ---- */
   function fit() {
-    var s = Math.min(innerWidth / 1280, innerHeight / 720);
+    var de = document.documentElement;
+    var w = de.clientWidth || window.innerWidth || screen.width || 1280;
+    var h = de.clientHeight || window.innerHeight || screen.height || 720;
+    var s = Math.min(w / 1280, h / 720);
+    if (!(s > 0)) s = 1;
     app.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
   }
-  addEventListener('resize', fit); fit();
+  addEventListener('resize', fit); addEventListener('load', fit); addEventListener('orientationchange', fit);
+  fit(); setTimeout(fit, 300); setTimeout(fit, 1200); setTimeout(fit, 3500);
 
   /* ---- Reloj ---- */
   var elClock = document.getElementById('clock'), elDate = document.getElementById('date'), lastT = '', lastD = '';
