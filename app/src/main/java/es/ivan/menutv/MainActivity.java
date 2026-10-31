@@ -215,6 +215,23 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public String getIp() {
+            try {
+                java.util.Enumeration<java.net.NetworkInterface> nis = java.net.NetworkInterface.getNetworkInterfaces();
+                while (nis != null && nis.hasMoreElements()) {
+                    java.net.NetworkInterface ni = nis.nextElement();
+                    if (!ni.isUp() || ni.isLoopback()) continue;
+                    java.util.Enumeration<java.net.InetAddress> addrs = ni.getInetAddresses();
+                    while (addrs.hasMoreElements()) {
+                        java.net.InetAddress a = addrs.nextElement();
+                        if (!a.isLoopbackAddress() && a instanceof java.net.Inet4Address) return a.getHostAddress();
+                    }
+                }
+            } catch (Throwable ignored) { }
+            return "";
+        }
+
+        @JavascriptInterface
         public void openSettings() {
             runOnUiThread(new Runnable() {
                 @Override public void run() {
