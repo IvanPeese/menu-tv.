@@ -33,6 +33,11 @@ html,body{margin:0;width:100%;height:100%;background:#0b1220;overflow:hidden;fon
 #app.lite .stage,#app.lite .layer,#app.lite .dim{transition:none}
 #app.lite .tile.sel{animation:none;box-shadow:0 0 0 3px #fff,0 8px 22px rgba(10,20,40,.5);transition:none}
 #app.lite .sel,#app.lite .tile{transition:none}
+/* nivel ultra: lo mínimo que sigue pareciendo un tiempo animado */
+#app.ultra .cld:nth-child(1),#app.ultra .r1,#app.ultra .s2{display:none}
+#app.ultra .star{animation:none}
+#app.ultra .big{text-shadow:0 1px 4px rgba(10,20,40,.55)}
+#app.ultra .card,#app.ultra .tile,#app.ultra .pill{box-shadow:none}
 .cld,.rain,.snow,.mist{will-change:transform}
 
 /* ---------- sol ---------- */
@@ -191,7 +196,27 @@ radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
   /* ====================================================================== */
 
   var app = document.getElementById('app');
-  if (CFG.lite) app.classList.add('lite');
+  /* Nivel de efectos: 0 completo, 1 ligero, 2 mínimo. Se ajusta solo midiendo los fotogramas por segundo. */
+  var level = CFG.lite ? 1 : 0;
+  try { var sv = localStorage.getItem('perf'); if (sv !== null) level = Math.max(level, parseInt(sv, 10) || 0); } catch (e) { }
+  function applyLevel() { app.classList.toggle('lite', level >= 1); app.classList.toggle('ultra', level >= 2); }
+  applyLevel();
+  function measureFps(cb) {
+    var n = 0, t0 = 0;
+    function f(t) { if (!t0) t0 = t; n++; if (t - t0 < 2000) requestAnimationFrame(f); else cb(n * 1000 / (t - t0)); }
+    requestAnimationFrame(f);
+  }
+  function autoTune() {
+    if (level >= 2) return;
+    measureFps(function (fps) {
+      if (fps < 40) {
+        level++; applyLevel();
+        try { localStorage.setItem('perf', String(level)); } catch (e) { }
+        setTimeout(autoTune, 2500);
+      }
+    });
+  }
+  setTimeout(autoTune, 5000);
 
   /* ---- Puente: en la tele es el real; en un navegador del PC, uno de demostración ---- */
   var demoApps = [['com.netflix.ninja', 'Netflix', '#E50914'], ['com.google.android.youtube.tv', 'YouTube', '#C4302B'],
