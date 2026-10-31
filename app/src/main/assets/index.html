@@ -5,108 +5,40 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Menú TV</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400&family=Figtree:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&display=swap" rel="stylesheet">
 <style>
-html,body{margin:0;width:100%;height:100%;background:#0b1220;overflow:hidden;font-family:'Figtree',system-ui,sans-serif}
-#app{position:absolute;left:50%;top:50%;width:1280px;height:720px;overflow:hidden;transform:translate(-50%,-50%);color:#fff;--c1:rgba(255,255,255,.92);--c2:rgba(255,255,255,.55)}
-.stage{position:absolute;inset:0;overflow:hidden;transition:background 1.4s;background:linear-gradient(180deg,#7D8A9A 0%,#A5B0BD 55%,#CDD3DA 100%)}
-.layer{position:absolute;inset:0;opacity:0;transition:opacity 1.4s}
-
-/* ---------- estados del tiempo ---------- */
-#app[data-wx=sun] .stage,#app[data-wx=partly] .stage{background:linear-gradient(180deg,#4C8FD0 0%,#86B8E3 50%,#D6E3EC 82%,#EBDDBF 100%)}
-#app[data-wx=cloud] .stage{background:linear-gradient(180deg,#7D8A9A 0%,#A5B0BD 55%,#CDD3DA 100%);--c1:rgba(236,240,245,.95);--c2:rgba(205,213,223,.7)}
-#app[data-wx=rain] .stage{background:linear-gradient(180deg,#2F3947 0%,#47525F 55%,#6A7480 100%);--c1:rgba(84,95,108,.95);--c2:rgba(58,68,80,.8)}
-#app[data-wx=snow] .stage{background:linear-gradient(180deg,#8A97A8 0%,#B4BECB 55%,#DDE3EA 100%);--c1:rgba(240,243,247,.95);--c2:rgba(214,221,230,.7)}
-#app[data-wx=sun] .l-sun,#app[data-wx=partly] .l-sun{opacity:1}
-#app[data-wx=partly] .l-cloud{opacity:.6}
-#app[data-wx=cloud] .l-cloud,#app[data-wx=rain] .l-cloud,#app[data-wx=snow] .l-cloud{opacity:1}
-#app[data-wx=rain] .l-rain{opacity:1}
-#app[data-wx=snow] .l-snow{opacity:1}
-/* noche */
-#app[data-night="1"][data-wx=sun] .stage,#app[data-night="1"][data-wx=partly] .stage{background:linear-gradient(180deg,#070E22 0%,#14224A 60%,#27375F 100%)}
-#app[data-night="1"] .sunstuff{display:none}
-#app[data-night="1"][data-wx=sun] .l-night,#app[data-night="1"][data-wx=partly] .l-night{opacity:1}
-.dim{position:absolute;inset:0;background:rgba(6,12,30,.5);opacity:0;transition:opacity 1.4s}
-#app[data-night="1"][data-wx=cloud] .dim,#app[data-night="1"][data-wx=rain] .dim,#app[data-night="1"][data-wx=snow] .dim,#app[data-night="1"][data-wx=partly] .dim{opacity:1}
-#app.lite .r2,#app.lite .mist,#app.lite .rays,#app.lite .mote,#app.lite .shim,#app.lite .cld:nth-child(n+3){display:none}
-#app.lite .glow{animation:none}
-#app.lite .stage,#app.lite .layer,#app.lite .dim{transition:none}
-#app.lite .tile.sel{animation:none;box-shadow:0 0 0 3px #fff,0 8px 22px rgba(10,20,40,.5);transition:none}
-#app.lite .sel,#app.lite .tile{transition:none}
-/* nivel ultra: lo mínimo que sigue pareciendo un tiempo animado */
-#app.ultra .cld:nth-child(1),#app.ultra .r1,#app.ultra .s2{display:none}
-#app.ultra .star{animation:none}
-#app.ultra .big{text-shadow:0 1px 4px rgba(10,20,40,.55)}
-#app.ultra .card,#app.ultra .tile,#app.ultra .pill{box-shadow:none}
-.cld,.rain,.snow,.mist{will-change:transform}
-
-/* ---------- sol ---------- */
-.glow{position:absolute;left:290px;top:-150px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(255,252,235,.95) 0,rgba(255,238,190,.65) 14%,rgba(255,220,150,.28) 36%,transparent 65%);animation:breathe 9s ease-in-out infinite}
-.rays{position:absolute;left:-260px;top:-690px;width:1800px;height:1800px;background:repeating-conic-gradient(rgba(255,250,230,.22) 0 3deg,transparent 3deg 9deg,rgba(255,250,230,.10) 9deg 12deg,transparent 12deg 21deg);-webkit-mask-image:radial-gradient(circle,#000 0,transparent 58%);mask-image:radial-gradient(circle,#000 0,transparent 58%);animation:spin 240s linear infinite}
-.disc{position:absolute;left:590px;top:150px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,#FFFEF4 0,#FFF3C4 70%,rgba(255,243,196,0) 100%)}
-.mote{position:absolute;border-radius:50%;background:rgba(255,255,255,.75);animation:rise linear infinite}
-.shim{position:absolute;left:0;right:0;top:360px;height:120px;background:linear-gradient(180deg,transparent,rgba(255,244,214,.22),transparent);animation:shimmer 8s ease-in-out infinite}
-/* noche: luna y estrellas */
-.moon{position:absolute;left:640px;top:150px;width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 38% 36%,#FFFFFF 0,#E8EDF8 60%,#C9D3E8 100%);box-shadow:0 0 70px 20px rgba(200,215,245,.35)}
-.star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;animation:twinkle 4s ease-in-out infinite}
-
-/* ---------- nubes ---------- */
-.cld{position:absolute;left:0;animation:drift linear infinite;background:
-radial-gradient(ellipse 30% 45% at 22% 62%,var(--c1),transparent 70%),
-radial-gradient(ellipse 34% 60% at 45% 48%,var(--c1),transparent 72%),
-radial-gradient(ellipse 28% 48% at 70% 58%,var(--c1),transparent 70%),
-radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
-
-/* ---------- lluvia ---------- */
-.rain{position:absolute;left:-80px;top:-400px;width:1440px;height:1200px;animation:fall linear infinite}
-.r1{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='320'%3E%3Cpath d='M74 12L60 150' stroke='white' stroke-opacity='.45' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M20 190L12 280' stroke='white' stroke-opacity='.3' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");animation-duration:.5s}
-.r2{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='420'%3E%3Cpath d='M110 20L94 200' stroke='white' stroke-opacity='.28' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");animation-duration:.72s}
-.r3{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='220'%3E%3Cpath d='M50 10L40 100' stroke='white' stroke-opacity='.55' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");animation-duration:.38s;background-size:160px 440px}
-.mist{position:absolute;left:-600px;width:2600px;height:240px;background:linear-gradient(180deg,transparent,rgba(190,205,220,.22),transparent);animation:mist linear infinite}
-.flash{position:absolute;inset:0;background:#E6EEF8;opacity:0;animation:zap 14s linear infinite}
-
-/* ---------- nieve ---------- */
-.snow{position:absolute;left:-60px;top:-320px;width:1400px;height:1100px;animation:snowfall linear infinite}
-.s1{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='320'%3E%3Cg fill='white' fill-opacity='.85'%3E%3Ccircle cx='30' cy='40' r='3'/%3E%3Ccircle cx='120' cy='110' r='2.4'/%3E%3Ccircle cx='170' cy='200' r='3.2'/%3E%3Ccircle cx='70' cy='250' r='2.2'/%3E%3Ccircle cx='150' cy='20' r='2'/%3E%3C/g%3E%3C/svg%3E");animation-duration:9s}
-.s2{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='400'%3E%3Cg fill='white' fill-opacity='.55'%3E%3Ccircle cx='60' cy='60' r='5'/%3E%3Ccircle cx='200' cy='180' r='4'/%3E%3Ccircle cx='110' cy='320' r='5.5'/%3E%3C/g%3E%3C/svg%3E");animation-duration:14s}
-
-/* ---------- animaciones ---------- */
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes breathe{0%,100%{transform:scale(1);opacity:.95}50%{transform:scale(1.07);opacity:1}}
-@keyframes rise{from{transform:translateY(0);opacity:0}15%{opacity:.8}to{transform:translateY(-260px);opacity:0}}
-@keyframes shimmer{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(40px);opacity:1}}
-@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:1}}
-@keyframes drift{from{transform:translateX(-900px)}to{transform:translateX(1400px)}}
-@keyframes fall{from{transform:translate(0,0)}to{transform:translate(-45px,320px)}}
-@keyframes snowfall{from{transform:translate(0,0)}to{transform:translate(40px,320px)}}
-@keyframes mist{from{transform:translateX(-500px)}to{transform:translateX(0)}}
-@keyframes zap{0%,92%,100%{opacity:0}93%{opacity:.3}94%{opacity:.05}95%{opacity:.22}97%{opacity:0}}
-@keyframes glowring{0%,100%{box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 18px 4px rgba(255,255,255,.35)}50%{box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 30px 10px rgba(255,255,255,.5)}}
-@media (prefers-reduced-motion:reduce){.glow,.rays,.mote,.shim,.cld,.rain,.snow,.mist,.flash,.star,.sel{animation:none!important}}
-
-/* ---------- interfaz ---------- */
+html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;font-family:'Manrope',system-ui,'Segoe UI',Roboto,sans-serif}
+#app{position:absolute;left:50%;top:50%;width:1280px;height:720px;overflow:hidden;transform:translate(-50%,-50%);color:#F3F6FB}
+.stage{position:absolute;inset:0;background:#01030A center/cover no-repeat}
+#app[data-bg="0"] .stage{background-image:url(img/saturno.jpg)}
+#app[data-bg="1"] .stage{background-image:url(img/anillos.jpg)}
+#app[data-bg="2"] .stage{background-image:url(img/luna.jpg)}
+#app[data-bg="3"] .stage{background-image:url(img/via.jpg)}
+.scrim{position:absolute;left:0;right:0;bottom:0;height:230px;background:linear-gradient(180deg,rgba(0,0,6,0),rgba(0,0,6,.72))}
 .ui{position:absolute;inset:0}
 .bar{position:absolute;left:72px;right:72px;top:28px;display:flex;gap:12px;align-items:center}
-.pill{appearance:none;cursor:pointer;font-family:'Figtree',system-ui,sans-serif;font-size:18px;font-weight:700;color:#fff;background:rgba(18,28,44,.4);padding:11px 22px;border-radius:999px;border:1px solid rgba(255,255,255,.35)}
-.pill.sel{background:rgba(255,255,255,.95);color:#16233A}
-.big{color:#fff;text-shadow:0 2px 24px rgba(10,20,40,.45)}
-#clock{font-family:'Unbounded',system-ui,sans-serif;font-weight:300;font-size:124px;letter-spacing:-4px;line-height:1}
-#date{font-size:30px;font-weight:700}
-.card{position:absolute;right:72px;top:108px;width:400px;box-sizing:border-box;padding:20px 26px;display:flex;flex-direction:column;gap:12px;color:#16233A;background:rgba(255,255,255,.84);border-radius:26px;box-shadow:0 12px 32px rgba(10,20,40,.25)}
-.card .now{display:flex;align-items:center;gap:18px}
-#temp{font-family:'Unbounded',system-ui,sans-serif;font-weight:300;font-size:52px;line-height:1}
-#city{font-size:22px;font-weight:800}
-#desc{font-size:16px;font-weight:600}
-.days{display:flex;justify-content:space-between;border-top:1px solid rgba(22,35,58,.2);padding-top:10px}
-.day{display:flex;flex-direction:column;align-items:center;font-size:14px;font-weight:700;min-width:62px;text-transform:capitalize}
-.day b{font-family:'Unbounded',system-ui,sans-serif;font-weight:400;font-size:19px}
-#label{position:absolute;left:72px;bottom:210px;font-size:36px;font-weight:800}
+.pill{appearance:none;cursor:pointer;font-family:inherit;font-size:17px;font-weight:600;color:#E8EDF6;background:rgba(8,12,24,.55);padding:10px 22px;border-radius:999px;border:1px solid rgba(255,255,255,.25)}
+.pill.sel{background:#F3F6FB;color:#0A1020;border-color:#F3F6FB}
+.pill.gap{margin-left:auto}
+.big{text-shadow:0 2px 24px rgba(0,0,0,.6)}
+#clock{font-weight:200;font-size:128px;letter-spacing:-4px;line-height:1}
+#date{font-weight:600;font-size:28px;color:#DCE4F2}
+.widgets{position:absolute;right:72px;top:96px;display:flex;gap:14px}
+.wd{background:rgba(6,10,22,.62);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:12px 18px;display:flex;align-items:center;gap:14px}
+.wd svg,.wd .mars{flex:none}
+.mars{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 36% 32%,#E9906A 0,#C1502E 55%,#7A2A17 100%)}
+.lab{font-size:12px;font-weight:800;letter-spacing:2px;color:rgba(243,246,251,.6);text-transform:uppercase}
+.val{font-size:22px;font-weight:600;margin-top:2px;white-space:nowrap}
+#factbox{position:absolute;left:72px;top:290px;width:330px;font-size:19px;line-height:1.45;color:#E4EBF7;text-shadow:0 2px 14px rgba(0,0,0,.85)}
+#factbox .lab{display:block;margin-bottom:2px}
+#label{position:absolute;left:72px;bottom:210px;font-size:30px;font-weight:800;text-shadow:0 2px 16px rgba(0,0,0,.8)}
 .apps{position:absolute;left:66px;right:66px;bottom:62px;display:flex;align-items:center;justify-content:space-between;gap:28px}
-.tile{appearance:none;padding:0;border:0;cursor:pointer;width:140px;height:79px;border-radius:14px;overflow:hidden;background:#1b2433;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(10,20,40,.38);transition:transform .18s;position:relative;color:#fff;font-family:'Figtree',system-ui,sans-serif;font-weight:800;font-size:16px}
+.tile{appearance:none;padding:0;border:0;cursor:pointer;width:140px;height:79px;border-radius:14px;overflow:hidden;background:#1b2433;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(0,0,0,.55);position:relative;color:#fff;font-family:inherit;font-weight:800;font-size:16px}
 .tile img{width:100%;height:100%;object-fit:cover;display:block}
 .tile img.ico{width:56px;height:56px;object-fit:contain}
-.tile.sel{transform:scale(1.4);z-index:2;animation:glowring 2.8s ease-in-out infinite}
-.tile.all{background:rgba(18,28,44,.55);border:1px solid rgba(255,255,255,.35)}
+.tile.sel{transform:scale(1.4);z-index:2;box-shadow:0 0 0 3px #fff,0 12px 30px rgba(0,0,0,.6)}
+.tile.all{background:rgba(8,12,24,.6);border:1px solid rgba(255,255,255,.25)}
+.credit{position:absolute;right:28px;bottom:12px;font-size:11px;letter-spacing:.4px;color:#fff;opacity:.55}
 
 /* ---------- Todas las apps ---------- */
 #all{position:absolute;inset:0;z-index:5;background:#080e1c;display:none;padding:56px 72px;box-sizing:border-box}
@@ -121,56 +53,24 @@ radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
 </style>
 </head>
 <body>
-<div id="app" data-wx="cloud" data-night="0">
-<div class="stage">
-<div class="layer l-sun">
-<div class="sunstuff">
-<div class="rays"></div><div class="glow"></div><div class="disc"></div><div class="shim"></div>
-<div class="mote" style="left:180px;top:560px;width:5px;height:5px;animation-duration:11s"></div>
-<div class="mote" style="left:360px;top:600px;width:4px;height:4px;animation-duration:14s;animation-delay:-5s"></div>
-<div class="mote" style="left:520px;top:520px;width:6px;height:6px;animation-duration:12s;animation-delay:-2s"></div>
-<div class="mote" style="left:700px;top:580px;width:4px;height:4px;animation-duration:15s;animation-delay:-8s"></div>
-<div class="mote" style="left:860px;top:540px;width:5px;height:5px;animation-duration:13s;animation-delay:-4s"></div>
-<div class="mote" style="left:1010px;top:610px;width:4px;height:4px;animation-duration:10s;animation-delay:-6s"></div>
-<div class="mote" style="left:1150px;top:530px;width:6px;height:6px;animation-duration:16s;animation-delay:-9s"></div>
-</div>
-</div>
-<div class="layer l-night">
-<div class="moon"></div>
-<div class="star" style="left:120px;top:90px"></div><div class="star" style="left:260px;top:210px;animation-delay:-1s"></div>
-<div class="star" style="left:400px;top:70px;animation-delay:-2s"></div><div class="star" style="left:520px;top:300px;animation-delay:-3s"></div>
-<div class="star" style="left:880px;top:80px;animation-delay:-1.5s"></div><div class="star" style="left:960px;top:260px;animation-delay:-2.5s"></div>
-<div class="star" style="left:1100px;top:150px;animation-delay:-.5s"></div><div class="star" style="left:1190px;top:340px;animation-delay:-3.4s"></div>
-<div class="star" style="left:760px;top:400px;animation-delay:-2.2s"></div><div class="star" style="left:60px;top:380px;animation-delay:-.8s"></div>
-</div>
-<div class="layer l-cloud">
-<div class="cld" style="top:280px;width:900px;height:260px;opacity:.7;animation-duration:150s;animation-delay:-70s"></div>
-<div class="cld" style="top:70px;width:1100px;height:320px;animation-duration:110s;animation-delay:-30s"></div>
-<div class="cld" style="top:180px;width:1300px;height:360px;opacity:.95;animation-duration:80s;animation-delay:-50s"></div>
-<div class="cld" style="top:-30px;width:1000px;height:280px;opacity:.85;animation-duration:125s;animation-delay:-95s"></div>
-</div>
-<div class="layer l-rain">
-<div class="mist" style="top:300px;animation-duration:40s"></div>
-<div class="mist" style="top:470px;animation-duration:55s;animation-delay:-20s"></div>
-<div class="rain r2"></div><div class="rain r1"></div><div class="rain r3"></div>
-<div class="flash"></div>
-</div>
-<div class="layer l-snow"><div class="snow s2"></div><div class="snow s1"></div></div>
-<div class="dim"></div>
-</div>
+<div id="app" data-bg="0">
+<div class="stage"></div>
+<div class="scrim"></div>
 
 <div class="ui">
 <div class="bar" id="bar"></div>
-<div style="position:absolute;left:72px;top:108px;display:flex;flex-direction:column;gap:6px">
+<div style="position:absolute;left:72px;top:100px;display:flex;flex-direction:column;gap:4px">
 <div class="big" id="clock">--:--</div>
 <div class="big" id="date">&nbsp;</div>
 </div>
-<div class="card">
-<div class="now"><div id="temp">--°</div><div><div id="city">Cargando…</div><div id="desc">&nbsp;</div></div></div>
-<div class="days" id="days"></div>
+<div class="widgets">
+<div class="wd"><svg id="moonsvg" width="40" height="40" viewBox="0 0 40 40"></svg><div><div class="lab">Luna</div><div class="val" id="moontxt">--</div></div></div>
+<div class="wd"><div class="mars"></div><div><div class="lab" id="marslab">Marte</div><div class="val" id="marstxt">--</div></div></div>
 </div>
+<div id="factbox"><span class="lab">✦ Dato del día</span><span id="fact"></span></div>
 <div class="big" id="label"></div>
 <div class="apps" id="apps"></div>
+<div class="credit" id="credit"></div>
 </div>
 
 <div id="all"><h2>Todas las apps</h2><div class="grid" id="grid"></div></div>
@@ -180,7 +80,6 @@ radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
 (function () {
   /* ===================== CONFIGURACIÓN (edita aquí) ===================== */
   var CFG = {
-    city: 'Rafelbunyol', lat: 39.5937, lon: -0.3366,     // ubicación del tiempo
     favs: [                                              // apps de la fila de abajo, en orden
       'com.netflix.ninja',
       'com.google.android.youtube.tv',
@@ -190,33 +89,37 @@ radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
       'com.spotify.tv.android'
     ],
     browser: 'com.internet.tvbrowser',                   // app del botón "Navegador"
-    inputsFallback: 'com.tcl.sourcemananger',            // si no se pueden listar las entradas
-    lite: true                                           // true = animaciones ligeras (recomendado en teles de 32 bits)
+    inputsFallback: 'com.tcl.sourcemananger'             // si no se pueden listar las entradas
   };
+  var FACTS = ["Un día en Venus dura más que un año venusiano.", "La luz del Sol tarda unos 8 minutos y 20 segundos en llegar a la Tierra.", "En el Sol cabrían más de un millón de Tierras.", "Saturno es menos denso que el agua.", "En Marte los atardeceres son de color azulado.", "La Vía Láctea tiene cientos de miles de millones de estrellas.", "Un año en Mercurio dura solo 88 días terrestres.", "La Luna se aleja de la Tierra unos 3,8 cm cada año.", "Neptuno completó su primera órbita desde su descubrimiento en 2011.", "Una cucharadita de estrella de neutrones pesaría miles de millones de toneladas.", "Olympus Mons, en Marte, es el volcán más alto del sistema solar.", "Los anillos de Saturno son sobre todo hielo de agua.", "La Voyager 1 es el objeto humano más lejano de la Tierra.", "En el espacio no se oye nada: no hay aire que transmita el sonido.", "La Estación Espacial Internacional da una vuelta a la Tierra cada 90 minutos.", "Titán, luna de Saturno, tiene lagos de metano líquido.", "Andrómeda, nuestra galaxia vecina, se acerca a la Vía Láctea.", "La Tierra viaja alrededor del Sol a unos 107.000 km/h.", "Plutón pasó a ser planeta enano en 2006.", "Algunas estrellas de neutrones giran cientos de veces por segundo.", "Ceres es el mayor objeto del cinturón de asteroides.", "Europa, luna de Júpiter, esconde un océano bajo su hielo.", "Parte de la luz de las estrellas que ves esta noche salió hace miles de años.", "El Sol concentra el 99,8 % de la masa del sistema solar.", "Un día en Júpiter dura menos de 10 horas.", "Encélado lanza chorros de vapor de agua desde su polo sur.", "M87* fue el primer agujero negro fotografiado, en 2019.", "Mercurio está más cerca del Sol, pero Venus es más caliente.", "La Gran Mancha Roja de Júpiter es una tormenta mayor que la Tierra.", "Cada segundo, el Sol convierte millones de toneladas de materia en energía.", "Si pudieras conducir hasta la Luna, tardarías unos 5 meses a 100 km/h."];
+  var CREDITS = [
+    'Saturno eclipsando al Sol · NASA/JPL-Caltech/SSI · Cassini',
+    'Saturno y la Tierra, 2013 · NASA/JPL-Caltech/SSI · Cassini',
+    'Valle de Taurus-Littrow · NASA · Apollo 17',
+    'Vía Láctea sobre el VLT · ESO'
+  ];
   /* ====================================================================== */
 
   var app = document.getElementById('app');
-  /* Nivel de efectos: 0 completo, 1 ligero, 2 mínimo. Se ajusta solo midiendo los fotogramas por segundo. */
-  var level = CFG.lite ? 1 : 0;
-  try { var sv = localStorage.getItem('perf'); if (sv !== null) level = Math.max(level, parseInt(sv, 10) || 0); } catch (e) { }
-  function applyLevel() { app.classList.toggle('lite', level >= 1); app.classList.toggle('ultra', level >= 2); }
-  applyLevel();
-  function measureFps(cb) {
-    var n = 0, t0 = 0;
-    function f(t) { if (!t0) t0 = t; n++; if (t - t0 < 2000) requestAnimationFrame(f); else cb(n * 1000 / (t - t0)); }
-    requestAnimationFrame(f);
+
+  /* ---- Fondo: cambia solo cada día; el botón "Fondo" lo cambia a mano ---- */
+  var bgIdx = 0;
+  function dayNum() { return Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000); }
+  function setBg(i) {
+    bgIdx = i; app.setAttribute('data-bg', String(i));
+    document.getElementById('credit').textContent = CREDITS[i];
   }
-  function autoTune() {
-    if (level >= 2) return;
-    measureFps(function (fps) {
-      if (fps < 40) {
-        level++; applyLevel();
-        try { localStorage.setItem('perf', String(level)); } catch (e) { }
-        setTimeout(autoTune, 2500);
-      }
-    });
+  function pickBg() {
+    var today = dayNum(), st = null;
+    try { st = JSON.parse(localStorage.getItem('bg')); } catch (e) { }
+    if (st && st.day === today) setBg(st.i % CREDITS.length);
+    else setBg(today % CREDITS.length);
   }
-  setTimeout(autoTune, 5000);
+  function nextBg() {
+    var i = (bgIdx + 1) % CREDITS.length; setBg(i);
+    try { localStorage.setItem('bg', JSON.stringify({ day: dayNum(), i: i })); } catch (e) { }
+  }
+  pickBg();
 
   /* ---- Puente: en la tele es el real; en un navegador del PC, uno de demostración ---- */
   var demoApps = [['com.netflix.ninja', 'Netflix', '#E50914'], ['com.google.android.youtube.tv', 'YouTube', '#C4302B'],
@@ -251,59 +154,40 @@ radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
   addEventListener('resize', fit); addEventListener('load', fit); addEventListener('orientationchange', fit);
   fit(); setTimeout(fit, 300); setTimeout(fit, 1200); setTimeout(fit, 3500);
 
-  /* ---- Reloj ---- */
+  /* ---- Reloj, Luna, Marte y dato del día (todo se calcula sin conexión) ---- */
   var elClock = document.getElementById('clock'), elDate = document.getElementById('date'), lastT = '', lastD = '';
+  function p2(n) { return (n < 10 ? '0' : '') + n; }
+  function moonSvg(f) {
+    var r = 18, c = 20, ang = 2 * Math.PI * f, cos = Math.cos(ang), rx = Math.abs(cos * r).toFixed(2), d;
+    if (f < 0.5) d = 'M' + c + ' ' + (c - r) + 'A' + r + ' ' + r + ' 0 0 1 ' + c + ' ' + (c + r) + 'A' + rx + ' ' + r + ' 0 0 ' + (cos > 0 ? 0 : 1) + ' ' + c + ' ' + (c - r) + 'Z';
+    else d = 'M' + c + ' ' + (c - r) + 'A' + r + ' ' + r + ' 0 0 0 ' + c + ' ' + (c + r) + 'A' + rx + ' ' + r + ' 0 0 ' + (cos > 0 ? 1 : 0) + ' ' + c + ' ' + (c - r) + 'Z';
+    return '<circle cx="20" cy="20" r="18" fill="#222B3D"/><path d="' + d + '" fill="#EEF1F7"/>';
+  }
+  var lastSky = '';
+  function sky(d) {
+    var jd = d.getTime() / 86400000 + 2440587.5;
+    var f = ((jd - 2451550.1) / 29.530588853) % 1; if (f < 0) f += 1;
+    var pct = Math.round((1 - Math.cos(2 * Math.PI * f)) / 2 * 100);
+    var name = (f < .03 || f > .97) ? 'Luna nueva' : f < .22 ? 'Creciente' : f < .28 ? 'Cuarto creciente' : f < .47 ? 'Gibosa creciente' : f < .53 ? 'Luna llena' : f < .72 ? 'Gibosa menguante' : f < .78 ? 'Cuarto menguante' : 'Menguante';
+    var msd = (jd + 69.184 / 86400 - 2405522.0028779) / 1.0274912517, mf = msd - Math.floor(msd);
+    var mh = Math.floor(mf * 24), mm = Math.floor((mf * 24 - mh) * 60);
+    var key = pct + name + mh + ':' + mm + d.getDate();
+    if (key === lastSky) return; lastSky = key;
+    document.getElementById('moonsvg').innerHTML = moonSvg(f);
+    document.getElementById('moontxt').textContent = name + ' · ' + pct + ' %';
+    document.getElementById('marslab').textContent = 'Marte · Sol ' + Math.floor(msd);
+    document.getElementById('marstxt').textContent = p2(mh) + ':' + p2(mm) + ' MTC';
+    document.getElementById('fact').textContent = FACTS[(d.getDate() - 1) % FACTS.length];
+  }
   function tick() {
     var d = new Date();
     var t = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     var raw = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
     var dd = raw.charAt(0).toUpperCase() + raw.slice(1);
-    if (t !== lastT) { elClock.textContent = t; lastT = t; }
+    if (t !== lastT) { elClock.textContent = t; lastT = t; sky(d); }
     if (dd !== lastD) { elDate.textContent = dd; lastD = dd; }
   }
   tick(); setInterval(tick, 1000);
-
-  /* ---- Tiempo (Open-Meteo, sin clave) ---- */
-  var DESC = { 0: 'Despejado', 1: 'Mayormente despejado', 2: 'Parcialmente nublado', 3: 'Nublado', 45: 'Niebla', 48: 'Niebla',
-    51: 'Llovizna', 53: 'Llovizna', 55: 'Llovizna', 56: 'Llovizna helada', 57: 'Llovizna helada', 61: 'Lluvia débil', 63: 'Lluvia', 65: 'Lluvia fuerte',
-    66: 'Lluvia helada', 67: 'Lluvia helada', 71: 'Nieve débil', 73: 'Nieve', 75: 'Nieve fuerte', 77: 'Granizo fino', 80: 'Chubascos', 81: 'Chubascos',
-    82: 'Chubascos fuertes', 85: 'Chubascos de nieve', 86: 'Chubascos de nieve', 95: 'Tormenta', 96: 'Tormenta con granizo', 99: 'Tormenta con granizo' };
-  function kind(c) {
-    if (c === 0 || c === 1) return 'sun';
-    if (c === 2) return 'partly';
-    if (c === 3 || c === 45 || c === 48) return 'cloud';
-    if ((c >= 71 && c <= 77) || c === 85 || c === 86) return 'snow';
-    if (c >= 51) return 'rain';
-    return 'cloud';
-  }
-  function showWeather(w) {
-    var c = w.current.weather_code;
-    app.setAttribute('data-wx', kind(c));
-    app.setAttribute('data-night', w.current.is_day ? '0' : '1');
-    document.getElementById('temp').textContent = Math.round(w.current.temperature_2m) + '°';
-    document.getElementById('city').textContent = CFG.city;
-    document.getElementById('desc').textContent = (DESC[c] || '') + ' · ' + Math.round(w.daily.temperature_2m_min[0]) + '° / ' + Math.round(w.daily.temperature_2m_max[0]) + '°';
-    var h = '';
-    for (var i = 0; i < Math.min(5, w.daily.time.length); i++) {
-      var d = new Date(w.daily.time[i] + 'T12:00:00');
-      h += '<div class="day">' + d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '') + '<b>' + Math.round(w.daily.temperature_2m_max[i]) + '°</b></div>';
-    }
-    document.getElementById('days').innerHTML = h;
-  }
-  var lastFetch = 0;
-  function loadWeather() {
-    lastFetch = Date.now();
-    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + CFG.lat + '&longitude=' + CFG.lon +
-      '&current=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=5';
-    fetch(url).then(function (r) { return r.json(); }).then(function (w) {
-      if (!w || !w.current) throw 0;
-      showWeather(w);
-      try { localStorage.setItem('wx', JSON.stringify(w)); } catch (e) { }
-    }).catch(function () {
-      try { var c = JSON.parse(localStorage.getItem('wx')); if (c) showWeather(c); } catch (e) { }
-    });
-  }
-  loadWeather(); setInterval(loadWeather, 20 * 60 * 1000);
 
   /* ---- Apps, iconos reales y entradas ---- */
   var installed = {}, labels = {}, iconQueue = [];
@@ -342,6 +226,7 @@ radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
     ins.forEach(function (i) { bar.appendChild(pill(i.label, { input: i.id })); });
     if (installed[CFG.browser]) bar.appendChild(pill('Navegador', { pkg: CFG.browser }));
     bar.appendChild(pill('⚙ Ajustes', { act: 'settings' }));
+    var fb = pill('🖼 Fondo', { act: 'bg' }); fb.className += ' gap'; bar.appendChild(fb);
 
     /* fila de apps */
     appsEl.innerHTML = '';
@@ -391,6 +276,7 @@ radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
     if (el.dataset.input) { if (!A.launchInput(el.dataset.input)) A.launch(CFG.inputsFallback); }
     else if (el.dataset.pkg) A.launch(el.dataset.pkg);
     else if (el.dataset.act === 'settings') A.openSettings();
+    else if (el.dataset.act === 'bg') nextBg();
     else if (el.dataset.act === 'all') openAll();
   }
   function openAll() { mode = 'all'; gsel = 0; document.getElementById('all').classList.add('open'); grid.scrollTop = 0; update(); }
@@ -428,7 +314,7 @@ radial-gradient(ellipse 50% 28% at 50% 78%,var(--c2),transparent 72%)}
 
   window.onBack = function () { if (mode === 'all') closeAll(); };
   window.onHome = function () { closeAll(); sel = { r: 1, c: 0 }; update(); };
-  window.refresh = function () { build(); if (Date.now() - lastFetch > 10 * 60 * 1000) loadWeather(); };
+  window.refresh = function () { pickBg(); build(); };
 
   build();
 })();
