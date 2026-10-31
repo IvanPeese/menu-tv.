@@ -66,6 +66,17 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
 .g .box img{width:100%;height:100%;object-fit:cover}
 .g .box img.ico{width:52px;height:52px;object-fit:contain}
 .g.sel{border-color:#fff;background:rgba(255,255,255,.14)}
+.g{position:relative}
+.g.fav .box::after{content:'★';position:absolute;right:6px;top:3px;font-size:18px;color:#FFD54A;text-shadow:0 1px 6px rgba(0,0,0,.9)}
+.g .box{position:relative}
+#allhint{position:absolute;left:72px;right:72px;bottom:22px;font-size:15px;font-weight:600;color:rgba(243,246,251,.65)}
+#pick{position:absolute;inset:0;z-index:8;background:rgba(2,5,12,.72);display:none;align-items:center;justify-content:center}
+#pick.open{display:flex}
+#pickbox{width:560px;background:#0d1526;border:1px solid rgba(255,255,255,.25);border-radius:22px;padding:26px 30px;box-shadow:0 20px 60px rgba(0,0,0,.7)}
+#pickbox h3{margin:0 0 4px;font-size:24px;font-weight:800}
+#pickbox p{margin:0 0 16px;font-size:15px;color:rgba(243,246,251,.65)}
+.opt{padding:12px 18px;border-radius:12px;font-size:19px;font-weight:600;border:2px solid transparent;margin-top:6px}
+.opt.sel{background:#F3F6FB;color:#0A1020}
 </style>
 </head>
 <body>
@@ -97,7 +108,8 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
 <div id="idle"><div id="idleclock"></div><div id="idledate"></div></div>
 <div id="toast"></div>
 
-<div id="all"><h2>Todas las apps</h2><div class="grid" id="grid"></div></div>
+<div id="all"><h2>Todas las apps</h2><div class="grid" id="grid"></div><div id="allhint">Mantén OK sobre una app para añadirla a la fila principal · ★ ya está en la fila</div></div>
+<div id="pick"><div id="pickbox"><h3 id="picktitle"></h3><p id="picksub"></p><div id="pickopts"></div></div></div>
 </div>
 
 <script>
@@ -279,7 +291,7 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
   }
   function enterIdle() {
     if (idle) return;
-    endEdit(); if (mode === 'all') closeAll(); hideToast();
+    endEdit(); if (mode === 'pick') closePick(); if (mode === 'all') closeAll(); hideToast();
     idle = true; app.classList.add('idle');
     document.getElementById('idleclock').textContent = lastT; document.getElementById('idledate').textContent = lastD;
     placeIdle(); idleMove = setInterval(placeIdle, 60000);
@@ -323,13 +335,30 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
     rows[1] = [].slice.call(appsEl.children); sel.c = Math.max(0, Math.min(sel.c, rows[1].length - 1));
     editing = false; update(); toast(name + ' quitada. Mantén OK sobre ella en "Todas" para volver a añadirla', 3500);
   }
-  function toggleFavGrid() {
-    var g = gridEls[gsel]; if (!g) return; var p = g.dataset.pkg, i = favOrder.indexOf(p);
-    if (i >= 0) { favOrder.splice(i, 1); saveFavs(); toast((labels[p] || p) + ' quitada de la fila', 2200); }
-    else if (favOrder.length >= 6) { toast('La fila está llena (máximo 6). Quita una antes', 2800); }
-    else { favOrder.push(p); saveFavs(); toast((labels[p] || p) + ' añadida a la fila', 2200); }
-    gridDirty = true;
+  /* ---- Menú para pasar una app de "Todas" a la fila principal (o quitarla) ---- */
+  var pickOpts = [], pickIdx = 0, pickPkg = '';
+  function markFavs() { gridEls.forEach(function (g) { g.classList.toggle('fav', favOrder.indexOf(g.dataset.pkg) >= 0); }); }
+  function openPick() {
+    var g = gridEls[gsel]; if (!g) return;
+    pickPkg = g.dataset.pkg; var nm = labels[pickPkg] || pickPkg, inRow = favOrder.indexOf(pickPkg) >= 0;
+    pickOpts = [];
+    if (inRow) { pickOpts.push({ t: 'Quitar de la fila principal', f: function () { favOrder.splice(favOrder.indexOf(pickPkg), 1); done(nm + ' quitada de la fila'); } }); }
+    else {
+      if (favOrder.length < 6) pickOpts.push({ t: 'Añadir al final de la fila', f: function () { favOrder.push(pickPkg); done(nm + ' añadida a la fila'); } });
+      favOrder.forEach(function (fp, i) { pickOpts.push({ t: 'Sustituir a ' + (labels[fp] || fp), f: function () { favOrder[i] = pickPkg; done(nm + ' ocupa ahora el sitio de ' + (labels[fp] || fp)); } }); });
+    }
+    pickOpts.push({ t: 'Cancelar', f: function () { closePick(); } });
+    document.getElementById('picktitle').textContent = nm;
+    document.getElementById('picksub').textContent = inRow ? 'Esta app ya está en la fila principal.' : 'Elige cómo ponerla en la fila principal.';
+    var box = document.getElementById('pickopts'); box.innerHTML = '';
+    pickOpts.forEach(function (o, i) { var d = document.createElement('div'); d.className = 'opt'; d.textContent = o.t; d.onclick = function () { pickIdx = i; pickGo(); }; box.appendChild(d); });
+    pickIdx = 0; mode = 'pick'; document.getElementById('pick').classList.add('open'); pickShow();
+    function done(msg) { saveFavs(); gridDirty = true; markFavs(); closePick(); toast(msg, 3000); }
   }
+  function pickShow() { [].forEach.call(document.getElementById('pickopts').children, function (d, i) { d.classList.toggle('sel', i === pickIdx); }); }
+  function pickMove(dy) { pickIdx = Math.max(0, Math.min(pickOpts.length - 1, pickIdx + dy)); pickShow(); }
+  function pickGo() { var o = pickOpts[pickIdx]; if (o) o.f(); }
+  function closePick() { document.getElementById('pick').classList.remove('open'); mode = 'all'; update(); }
   var gridDirty = false;
 
   function setIcon(img, box, pkg) {
@@ -436,7 +465,7 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
     }
     var ipv = ''; try { ipv = A.getIp ? A.getIp() : ''; } catch (e) { }
     document.getElementById('ip').textContent = ipv ? 'IP ' + ipv : '';
-    startPump(); update();
+    markFavs(); startPump(); update();
   }
 
   function update() {
@@ -462,7 +491,7 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
     else if (el.dataset.act === 'bg') nextBg();
     else if (el.dataset.act === 'all') openAll();
   }
-  function openAll() { mode = 'all'; gsel = 0; document.getElementById('all').classList.add('open'); grid.scrollTop = 0; update(); }
+  function openAll() { mode = 'all'; gsel = 0; markFavs(); document.getElementById('all').classList.add('open'); grid.scrollTop = 0; update(); }
   function closeAll() { mode = 'main'; document.getElementById('all').classList.remove('open'); if (gridDirty) { gridDirty = false; build(); } else update(); }
 
   function move(dx, dy) {
@@ -483,12 +512,13 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
   var holdT = 0, holdFired = false, swallowUp = false;
   function isEnter(e) { return e.key === 'Enter' || e.keyCode === 13 || e.keyCode === 23; }
   function shortPress() {
+    if (mode === 'pick') { pickGo(); return; }
     if (editing) { endEdit(); return; }
     if (mode === 'all') { var g = gridEls[gsel]; if (g) { launchApp(g.dataset.pkg); closeAll(); } }
     else { var el = rows[sel.r][sel.c]; if (el) activate(el); }
   }
   function longPress() {
-    if (mode === 'all') toggleFavGrid();
+    if (mode === 'all') openPick();
     else if (sel.r === 1 && !editing) startEdit();
   }
   addEventListener('keydown', function (e) {
@@ -497,6 +527,12 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
     if (idle) { wake(); if (isEnter(e)) swallowUp = true; e.preventDefault(); return; }
     if (isEnter(e)) {
       if (!e.repeat && !holdT) { holdFired = false; holdT = setTimeout(function () { holdT = 0; holdFired = true; longPress(); }, 650); }
+      e.preventDefault(); return;
+    }
+    if (mode === 'pick') {
+      if (k === 'ArrowUp' || kc === 19) pickMove(-1);
+      else if (k === 'ArrowDown' || kc === 20) pickMove(1);
+      else if (k === 'Escape' || k === 'GoBack' || kc === 27) closePick();
       e.preventDefault(); return;
     }
     if (editing) {
@@ -524,7 +560,7 @@ html,body{margin:0;width:100%;height:100%;background:#01030A;overflow:hidden;fon
   });
   addEventListener('click', resetIdle); addEventListener('touchstart', resetIdle);
 
-  window.onBack = function () { if (idle) { wake(); return; } if (editing) { endEdit(); return; } if (mode === 'all') closeAll(); };
+  window.onBack = function () { if (idle) { wake(); return; } if (mode === 'pick') { closePick(); return; } if (editing) { endEdit(); return; } if (mode === 'all') closeAll(); };
   window.onHome = function () { wake(); endEdit(); closeAll(); var lp = lsGet('last', ''), idx = 0; rows[1].forEach(function (t, i) { if (t.dataset.pkg === lp) idx = i; }); sel = { r: 1, c: idx }; resetIdle(); update(); };
   window.refresh = function () { wake(); pickBg(); build(); resetIdle(); };
 
